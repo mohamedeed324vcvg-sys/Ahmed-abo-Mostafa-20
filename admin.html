@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>صفحة الإدمن - إضافة الأحداث</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- مكتبة Particles.js للخلفية السحرية -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+<body>
+    <!-- خلفية متحركة مع جسيمات -->
+    <div id="particles-js"></div>
+
+    <header>
+        <h1>صفحة الإدمن</h1>
+        <p>أضف الأحداث التاريخية هنا</p>
+    </header>
+
+    <section id="admin-section">
+        <!-- نموذج تسجيل الإدمن -->
+        <div id="admin-login">
+            <input type="password" id="admin-password" placeholder="كلمة مرور الإدمن">
+            <button id="login-admin-btn">دخول</button>
+        </div>
+        <!-- نموذج إضافة الأحداث (يظهر فقط بعد الدخول) -->
+        <form id="add-news-form" style="display:none;">
+            <input type="text" id="news-title" placeholder="عنوان الحدث" required>
+            <textarea id="news-content" placeholder="وصف الحدث" required></textarea>
+            <input type="file" id="news-image" accept="image/*"> <!-- حقل رفع الصور -->
+            <button type="submit">أضف حدث</button>
+        </form>
+        <!-- قسم رؤية المستخدمين (للإدمن فقط) -->
+        <div id="user-list" style="display:none;">
+            <h3>قائمة المستخدمين المسجلين</h3>
+            <div id="users-display"></div>
+        </div>
+        <!-- نموذج إرسال بريد (للإدمن فقط) -->
+        <form id="send-email-form" style="display:none;">
+            <input type="email" id="email-recipient" placeholder="بريد المستلم" required>
+            <input type="text" id="email-subject" placeholder="موضوع البريد" required>
+            <textarea id="email-body" placeholder="نص البريد" required></textarea>
+            <button type="submit">إرسال بريد</button>
+        </form>
+        <!-- زر إخراج مساعد (للمسؤول فقط) -->
+        <div id="remove-assistant" style="display:none;">
+            <input type="text" id="assistant-name" placeholder="اسم الإدمن المساعد للإخراج">
+            <button id="remove-btn">إخراج المساعد</button>
+        </div>
+        <button id="back-to-main" onclick="window.location.href='index.html'" style="display:none;">العودة إلى الصفحة الرئيسية</button>
+    </section>
+
+    <script src="admin-script.js"></script>
+</body>
+</html>

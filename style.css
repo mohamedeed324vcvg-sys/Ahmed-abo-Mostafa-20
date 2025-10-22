@@ -1,0 +1,162 @@
+body {
+    font-family: 'Times New Roman', serif;
+    font-size: 14px; /* حجم خط متوسط */
+    background: linear-gradient(to bottom, #8B4513, #D2B48C, #654321);
+    color: #2F1B14;
+    margin: 0;
+    padding: 15px; /* padding متوسط */
+    direction: rtl;
+    overflow-x: hidden; /* منع التمرير الأفقي */
+}
+
+#particles-js {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* خلفية */
+}
+
+header {
+    text-align: center;
+    border-bottom: 3px solid gold; /* ذهبي تاريخي */
+    padding-bottom: 15px; /* padding متوسط */
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* ظل للنص */
+}
+
+.historical-figures {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* gap متوسط */
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.figure {
+    width: 80px; /* حجم صور متوسط */
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid gold;
+    animation: float 3s ease-in-out infinite, rotate3d 10s linear infinite; /* تحريك ثلاثي الأبعاد */
+    transition: transform 0.5s; /* تأثير عند التمرير */
+}
+
+.figure:hover {
+    transform: scale(1.1) rotateY(180deg); /* دوران ثلاثي الأبعاد عند التمرير */
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes rotate3d {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+}
+
+section {
+    margin: 20px 0; /* margin متوسط */
+    padding: 15px; /* padding متوسط */
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px; /* radius متوسط */
+    box-shadow: 0 0 15px rgba(0,0,0,0.7), inset 0 0 8px gold; /* ظل داخلي ذهبي */
+    animation: glow 2s ease-in-out infinite alternate; /* تأثير ضوئي */
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 15px rgba(0,0,0,0.7), inset 0 0 8px gold; }
+    to { box-shadow: 0 0 20px rgba(0,0,0,0.9), inset 0 0 10px gold; }
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+button {
+    background: linear-gradient(to right, #8B4513, #654321);
+    color: white;
+    border: 2px solid gold;
+    padding: 10px; /* padding متوسط */
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+button:hover {
+    background: linear-gradient(to right, #654321, #8B4513);
+    transform: scale(1.05); /* تكبير عند التمرير */
+    box-shadow: 0 0 8px gold;
+}
+
+#news-list {
+    margin-bottom: 15px;
+}
+
+.news-item {
+    border-bottom: 2px solid gold;
+    padding: 10px 0; /* padding متوسط */
+    animation: fadeIn 1s, slideIn 1s; /* ظهور تدريجي وانزلاق */
+    background: rgba(255, 218, 185, 0.5); /* لون قديم */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-50%); } /* slide متوسط */
+    to { transform: translateX(0); }
+}
+
+.student-links {
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.student-links a {
+    color: #8B4513;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.student-links a:hover {
+    text-decoration: underline;
+}
+
+.profile-card {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    animation: bounceIn 1s ease-out;
+    text-align: center;
+    color: #2F1B14;
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+#login-section {
+    position: relative;
+}
+
+#toggle-login {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
