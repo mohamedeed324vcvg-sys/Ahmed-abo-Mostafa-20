@@ -43,7 +43,7 @@ function displayUserInfo() {
     userInfo.innerHTML = '';
     if (currentUser) {
         const div = document.createElement('div');
-        div.innerHTML = `<p>الحالة الحالية: ${currentUser.status}</p>`;
+        div.innerHTML = `<p>الاسم: ${currentUser.name || 'غير محدد'}</p><p>الحالة الحالية: ${currentUser.status}</p>`;
         if (currentUser.image) {
             div.innerHTML += `<br><img src="${currentUser.image}" width="80" height="80" alt="صورة">`;
         }
@@ -60,11 +60,13 @@ function updateAdminVisibility() {
     adminBtn.style.display = (currentUser && (currentUser.status === 'assistant' || currentUser.status === 'admin')) ? 'inline-block' : 'none';
 }
 
-// إظهار حقل الصورة إذا كان طالب أو كلمة المرور إذا كان إدمن مساعد أو مسؤول
+// إظهار حقل الصورة إذا كان طالب أو كلمة المرور إذا كان إدمن مساعد أو مسؤول، وحقل الاسم للجميع
 document.addEventListener('change', function(e) {
     if (e.target && e.target.id === 'user-status') {
+        const nameInput = document.getElementById('user-name');
         const imageInput = document.getElementById('student-image');
         const passwordInput = document.getElementById('admin-password');
+        if (nameInput) nameInput.style.display = 'block'; // الاسم مطلوب للجميع
         if (e.target.value === 'student') {
             if (imageInput) imageInput.style.display = 'block';
             if (passwordInput) passwordInput.style.display = 'none';
@@ -103,28 +105,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
             }
+            const nameInput = document.getElementById('user-name');
+            const name = nameInput ? nameInput.value : '';
+            if (!name) {
+                alert('يرجى إدخال اسمك!');
+                return;
+            }
             if (status === 'student') {
                 const fileInput = document.getElementById('student-image');
                 if (fileInput && fileInput.files[0]) {
                     const reader = new FileReader();
                     reader.onload = function() {
-                        currentUser = { status, image: reader.result };
+                        currentUser = { status, name, image: reader.result };
                         localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        // حفظ المستخدم في قائمة المستخدمين للإدمن
+                        let users = JSON.parse(localStorage.getItem('users')) || [];
+                        users.push(currentUser);
+                        localStorage.setItem('users', JSON.stringify(users));
                         displayUserInfo();
                         updateAdminVisibility();
                         document.getElementById('logout-btn').style.display = 'inline-block';
                     };
                     reader.readAsDataURL(fileInput.files[0]);
                 } else {
-                    currentUser = { status, image: null };
+                    currentUser = { status, name, image: null };
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    // حفظ المستخدم في قائمة المستخدمين للإدمن
+                    let users = JSON.parse(localStorage.getItem('users')) || [];
+                    users.push(currentUser);
+                    localStorage.setItem('users', JSON.stringify(users));
                     displayUserInfo();
                     updateAdminVisibility();
                     document.getElementById('logout-btn').style.display = 'inline-block';
                 }
             } else {
-                currentUser = { status, image: null };
+                currentUser = { status, name, image: null };
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                // حفظ المستخدم في قائمة المستخدمين للإدمن
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                users.push(currentUser);
+                localStorage.setItem('users', JSON.stringify(users));
                 displayUserInfo();
                 updateAdminVisibility();
                 document.getElementById('logout-btn').style.display = 'inline-block';
@@ -142,6 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateAdminVisibility();
             logoutBtn.style.display = 'none';
             // إعادة تعيين واجهة اختيار الحالة
+            const nameInput = document.getElementById('user-name');
+            if (nameInput) {
+                nameInput.value = '';
+                nameInput.style.display = 'block'; // الاسم مطلوب للجميع
+            }
             const imageInput = document.getElementById('student-image');
             if (imageInput) {
                 imageInput.value = '';
