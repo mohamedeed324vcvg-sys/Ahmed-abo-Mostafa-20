@@ -3,6 +3,17 @@ let news = JSON.parse(localStorage.getItem('news')) || [];
 let users = JSON.parse(localStorage.getItem('users')) || [];
 let adminType = ''; // نوع الإدمن
 
+// إضافة listeners لتحديث البيانات عند تغيير localStorage من صفحات أخرى
+window.addEventListener('storage', function(e) {
+    if (e.key === 'users') {
+        users = JSON.parse(localStorage.getItem('users')) || [];
+        displayUsers();
+    } else if (e.key === 'news') {
+        news = JSON.parse(localStorage.getItem('news')) || [];
+        displayNewsForDelete();
+    }
+});
+
 // تهيئة Particles.js
 particlesJS('particles-js', {
     particles: {
