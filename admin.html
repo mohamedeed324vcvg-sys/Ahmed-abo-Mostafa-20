@@ -1,59 +1,43 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <title>صفحة الإدمن - إضافة الأحداث</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- مكتبة Particles.js للخلفية السحرية -->
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <meta charset="UTF-8">
+  <title>إضافة حدث</title>
+  <style>
+    body { font-family: Cairo, sans-serif; direction: rtl; margin: 20px; }
+    input, textarea { display: block; margin: 10px 0; width: 100%; padding: 5px; }
+    button { padding: 8px 15px; background: green; color: white; border: none; border-radius: 5px; }
+    #result { background: #f2f2f2; padding: 10px; margin-top: 10px; white-space: pre-wrap; }
+  </style>
 </head>
 <body>
-    <!-- خلفية متحركة مع جسيمات -->
-    <div id="particles-js"></div>
+  <h1>👨‍🏫 صفحة الأدمن</h1>
+  <input id="title" placeholder="عنوان الحدث">
+  <input id="date" placeholder="تاريخ الحدث">
+  <textarea id="details" placeholder="تفاصيل الحدث"></textarea>
+  <button onclick="addEvent()">إضافة</button>
 
-    <header>
-        <h1>صفحة الإدمن</h1>
-        <p>أضف الأحداث التاريخية هنا</p>
-    </header>
+  <h3>📄 انسخ الكود وضعه في ملف events.json:</h3>
+  <div id="result"></div>
 
-    <section id="admin-section">
-        <!-- نموذج تسجيل الإدمن -->
-        <div id="admin-login">
-            <input type="password" id="admin-password" placeholder="كلمة مرور الإدمن">
-            <button id="login-admin-btn">دخول</button>
-        </div>
-        <!-- نموذج إضافة الأحداث (يظهر فقط بعد الدخول) -->
-        <form id="add-news-form" style="display:none;">
-            <input type="text" id="news-title" placeholder="عنوان الحدث" required>
-            <textarea id="news-content" placeholder="وصف الحدث" required></textarea>
-            <input type="file" id="news-image" accept="image/*"> <!-- حقل رفع الصور -->
-            <button type="submit">أضف حدث</button>
-        </form>
-        <!-- قسم رؤية المستخدمين (للإدمن فقط) -->
-        <div id="user-list" style="display:none;">
-            <h3>قائمة المستخدمين المسجلين (الحقيقيين)</h3>
-            <div id="users-display"></div>
-        </div>
-        <!-- قسم حذف الأحداث (للمسؤول فقط) -->
-        <div id="delete-news" style="display:none;">
-            <h3>حذف حدث</h3>
-            <div id="news-delete-list"></div>
-        </div>
-        <!-- نموذج إرسال بريد (للإدمن فقط) -->
-        <form id="send-email-form" style="display:none;">
-            <input type="email" id="email-recipient" placeholder="بريد المستلم" required>
-            <input type="text" id="email-subject" placeholder="موضوع البريد" required>
-            <textarea id="email-body" placeholder="نص البريد" required></textarea>
-            <button type="submit">إرسال بريد</button>
-        </form>
-        <!-- زر إخراج مساعد (للمسؤول فقط) -->
-        <div id="remove-assistant" style="display:none;">
-            <input type="text" id="assistant-name" placeholder="اسم الإدمن المساعد للإخراج">
-            <button id="remove-btn">إخراج المساعد</button>
-        </div>
-        <button id="back-to-main" onclick="window.location.href='index.html'" style="display:none;">العودة إلى الصفحة الرئيسية</button>
-    </section>
+  <script>
+    let events = [];
 
-    <script src="admin-script.js"></script>
+    fetch("events.json")
+      .then(res => res.json())
+      .then(data => events = data);
+
+    function addEvent() {
+      let title = document.getElementById("title").value;
+      let date = document.getElementById("date").value;
+      let details = document.getElementById("details").value;
+
+      if (!title || !date) return alert("من فضلك املأ كل البيانات");
+
+      events.push({ title, date, details });
+      document.getElementById("result").textContent = JSON.stringify(events, null, 2);
+      alert("تمت إضافة الحدث! انسخ الكود الجديد وضعه في ملف events.json على GitHub ✅");
+    }
+  </script>
 </body>
 </html>
