@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <title>موقع معلم التاريخ - الروعة التاريخية</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <!-- مكتبة Particles.js للخلفية السحرية -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-    <!-- تم إزالة كل أكواد تسجيل الدخول بجوجل -->
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- خلفية متحركة مع جسيمات -->
@@ -17,17 +19,19 @@
         <p>استكشف الأحداث التاريخية مع معلمك</p>
         <h2>احمد ابو مصطفى</h2>
         <p>fares mohamed</p>
-        <div class="historical-figures">
-            <img src="https://www.independentarabia.com/sites/default/files/article/mainimage/2024/10/22/1072851-177762201.jpg" alt="كليوباترا" class="figure">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg/330px-Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg" alt="نابليون" class="figure">
-            <img src="https://www.arageek.com/_next/image?url=https%3A%2F%2Fcdn.arageek.com%2Fmagazine%2F2017%2F09%2FAlexander-the-Great.jpg&w=3840&q=75" alt="ألكسندر" class="figure">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkbSyx6_a-6wwp5hO1SLF29SAVApiVkIyY_A&s" alt="رمسيس" class="figure">
+        <div class="historical-figures" id="historical-figures-container">
+            <img src="https://www.independentarabia.com/sites/default/files/article/mainimage/2024/10/22/1072851-177762201.jpg" alt="كليوباترا" class="figure" data-character="cleopatra">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg/330px-Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg" alt="نابليون" class="figure" data-character="napoleon">
+            <img src="https://www.arageek.com/_next/image?url=https%3A%2F%2Fcdn.arageek.com%2Fmagazine%2F2017%2F09%2FAlexander-the-Great.jpg&w=3840&q=75" alt="ألكسندر" class="figure" data-character="alexander">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkbSyx6_a-6wwp5hO1SLF29SAVApiVkIyY_A&s" alt="رمسيس" class="figure" data-character="ramses">
         </div>
     </header>
 
     <section id="news-section">
         <h2>قسم الأحداث التاريخية</h2>
-        <div id="news-list"></div>
+        <div class="timeline-container">
+            <div id="news-list" class="timeline"></div>
+        </div>
         <!-- روابط للطلاب -->
         <div class="student-links">
             <a href="events.html">مشاهدة الأحداث</a> | <a href="profile.html">البروفايل</a>
@@ -37,10 +41,13 @@
     </section>
 
     <section id="login-section">
-        <h2>تحديد الحالة (بدون تسجيل بجوجل)</h2>
+        <h2>تسجيل الدخول أو تحديد الحالة</h2>
 
-        <!-- نموذج اختيار الحالة يظهر دائماً الآن -->
-        <div id="status-selection" style="display:block;">
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload" data-client_id="YOUR_NEW_CLIENT_ID_HERE" data-callback="handleCredentialResponse"></div>
+        <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+
+        <div id="status-selection" style="display:none;">
             <h3>اختر حالتك:</h3>
             <select id="user-status">
                 <option value="visitor">زائر</option>
@@ -57,6 +64,15 @@
         <div id="user-info"></div>
         <button id="logout-btn" style="display:none;">تسجيل خروج</button>
     </section>
+
+    <!-- النافذة المنبثقة للشخصيات -->
+    <div id="character-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-title"></h3>
+            <p id="modal-bio"></p>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
