@@ -133,8 +133,12 @@ document.getElementById('add-news-form').addEventListener('submit', function(e) 
 function saveNews(title, content, image) {
     news.push({ title, content, image });
     localStorage.setItem('news', JSON.stringify(news));
+    // Clear form
+    document.getElementById('news-title').value = '';
+    document.getElementById('news-content').value = '';
+    document.getElementById('news-image').value = '';
+    displayNewsForDelete(); // Refresh the list of news to delete
     alert('تم إضافة الحدث!');
-    window.location.href = 'index.html'; // العودة التلقائية
 }
 
 // إرسال بريد (محاكاة)
