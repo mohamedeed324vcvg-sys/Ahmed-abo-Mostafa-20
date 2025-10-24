@@ -1,5 +1,5 @@
- // تحميل البيانات من localStorage
-let news = JSON.parse(localStorage.getItem('news')) || [];
+// تحميل البيانات من الخادم
+let news = [];
 // مستخدم حالي
 let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
 
@@ -22,6 +22,22 @@ function initParticles() {
             events: { onhover: { enable: true, mode: 'repulse' } }
         }
     });
+}
+
+// تحميل الأحداث من الخادم
+function loadNews() {
+    fetch('get_events.php')
+        .then(response => response.json())
+        .then(data => {
+            news = data;
+            displayNews();
+        })
+        .catch(error => {
+            console.error('Error loading news:', error);
+            // Fallback to localStorage if server fails
+            news = JSON.parse(localStorage.getItem('news')) || [];
+            displayNews();
+        });
 }
 
 // عرض الأخبار كما كانت
@@ -152,7 +168,7 @@ document.addEventListener('change', function(e) {
 // معالجة تأكيد الحالة
 document.addEventListener('DOMContentLoaded', function() {
     initParticles();
-    displayNews();
+    loadNews();
 
     const confirmBtn = document.getElementById('confirm-status');
     if (confirmBtn) {
@@ -248,22 +264,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 // تهيئة العرض عند التحميل إذا كان هناك مستخدم محفوظ
-    function initializeUserSession() {
-        updateAdminVisibility();
-        const isLoggedIn = !!currentUser;
-        document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline-block' : 'none';
-        document.getElementById('status-selection').style.display = isLoggedIn ? 'none' : 'block';
-        document.querySelector('.g_id_signin').style.display = isLoggedIn ? 'none' : 'block';
-        displayUserInfo(); // استدعاء هذه الدالة هنا لعرض معلومات المستخدم أو النموذج
-    }
+function initializeUserSession() {
+    updateAdminVisibility();
+    const isLoggedIn = !!currentUser;
+    document.getElementById('logout-btn').style.display = isLoggedIn ? 'inline-block' : 'none';
+    document.getElementById('status-selection').style.display = isLoggedIn ? 'none' : 'block';
+    document.querySelector('.g_id_signin').style.display = isLoggedIn ? 'none' : 'block';
+    displayUserInfo(); // استدعاء هذه الدالة هنا لعرض معلومات المستخدم أو النموذج
+}
     // تهيئة الجلسة عند تحميل الصفحة
     initializeUserSession();
 
     // إضافة listener لتحديث الأحداث عند تغيير localStorage من صفحات أخرى
     window.addEventListener('storage', function(e) {
         if (e.key === 'news') {
-            news = JSON.parse(localStorage.getItem('news')) || [];
-            displayNews();
+            loadNews(); // Reload from server
         }
     });
 
