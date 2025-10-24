@@ -1,5 +1,5 @@
-// تحميل البيانات من localStorage
-let news = JSON.parse(localStorage.getItem('news')) || [];
+// تحميل البيانات من الخادم
+let news = [];
 
 // تهيئة Particles.js
 particlesJS('particles-js', {
@@ -31,12 +31,27 @@ function displayNews() {
     });
 }
 
-window.onload = displayNews;
+// تحميل الأحداث من الخادم
+function loadNews() {
+    fetch('get_events.php')
+        .then(response => response.json())
+        .then(data => {
+            news = data;
+            displayNews();
+        })
+        .catch(error => {
+            console.error('Error loading news:', error);
+            // Fallback to localStorage if server fails
+            news = JSON.parse(localStorage.getItem('news')) || [];
+            displayNews();
+        });
+}
+
+window.onload = loadNews;
 
 // إضافة listener لتحديث الأحداث عند تغيير localStorage من صفحات أخرى
 window.addEventListener('storage', function(e) {
     if (e.key === 'news') {
-        news = JSON.parse(localStorage.getItem('news')) || [];
-        displayNews();
+        loadNews(); // Reload from server
     }
 });
