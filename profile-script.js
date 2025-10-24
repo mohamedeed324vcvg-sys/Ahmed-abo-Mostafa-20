@@ -1,48 +1,28 @@
-// تهيئة Particles.js
-particlesJS('particles-js', {
-    particles: {
-        number: { value: 30 },
-        color: { value: '#FFD700' },
-        shape: { type: 'circle' },
-        opacity: { value: 0.5 },
-        size: { value: 2 },
-        move: { speed: 1, direction: 'none', random: true }
-    },
-    interactivity: {
-        events: { onhover: { enable: true, mode: 'repulse' } }
-    }
-});
+<?php
+require 'vendor/autoload.php';
 
-// عرض معلومات المستخدم الحالي
-function displayProfile() {
-    const profileCard = document.getElementById('profile-card');
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+session_start();
 
-    if (currentUser) {
-        let title = 'الزائر';
-        switch(currentUser.status) {
-            case 'student': title = 'المؤرخ الشاب'; break;
-            case 'assistant': title = 'مساعد المؤرخ'; break;
-            case 'admin': title = 'كبير المؤرخين'; break;
-        }
+// إعداد بيانات الاعتماد
+$client = new Google_Client();
+$client->setClientId('668553959423-4j0co13pl18pm4hs42pdiougdm8m9j7o.apps.googleusercontent.com'); // استبدل بـ Client ID الخاص بك
+$client->setClientSecret('668553959423-4j0co13pl18pm4hs42pdiougdm8m9j7o.apps.googleusercontent.com'); // استبدل بـ Client Secret الخاص بك
+$client->setRedirectUri('https://mohamedeed324vcvg-sys.github.io/Ahmed-abo-Mostafa-20/'); // URI إعادة                 
+$client->addScope('email');
+$client->addScope('profile');
 
-        let profileHTML = `
-            <h2>${title} ${currentUser.name}</h2>
-            <p><strong>الرتبة:</strong> ${currentUser.status}</p>
-        `;
-        if (currentUser.email) {
-            profileHTML += `<p><strong>البريد:</strong> ${currentUser.email}</p>`;
-        }
-        if (currentUser.image) {
-            profileHTML += `<img src="${currentUser.image}" width="100" height="100" alt="صورتك الشخصية" style="border-radius: 50%; border: 3px solid gold; margin-top: 10px;">`;
-        }
-        profileCard.innerHTML = profileHTML;
-    } else {
-        profileCard.innerHTML = `
-            <h2>أيها الرحالة المجهول</h2>
-            <p>لا توجد معلومات عنك في سجلاتنا. يرجى تسجيل هويتك في الصفحة الرئيسية لتنضم إلى رحلتنا عبر التاريخ.</p>
-        `;
-    }
-}
+// إنشاء رابط تسجيل الدخول
+$loginUrl = $client->createAuthUrl();
+?>
 
-window.onload = displayProfile;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول باستخدام Google</title>
+</head>
+<body>
+    <a href="<?php echo htmlspecialchars($loginUrl); ?>">تسجيل الدخول باستخدام Google</a>
+</body>
+</html>
