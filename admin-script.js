@@ -1,5 +1,5 @@
-// تحميل البيانات من localStorage
-let news = JSON.parse(localStorage.getItem('news')) || [];
+// تحميل البيانات من الخادم
+let news = [];
 let users = JSON.parse(localStorage.getItem('users')) || [];
 let adminType = ''; // نوع الإدمن
 
@@ -9,8 +9,18 @@ window.addEventListener('storage', function(e) {
         users = JSON.parse(localStorage.getItem('users')) || [];
         displayUsers();
     } else if (e.key === 'news') {
-        news = JSON.parse(localStorage.getItem('news')) || [];
-        displayNewsForDelete();
+        // Reload news from server
+        fetch('get_events.php')
+            .then(response => response.json())
+            .then(data => {
+                news = data;
+                displayNewsForDelete();
+            })
+            .catch(error => {
+                console.error('Error loading news:', error);
+                news = JSON.parse(localStorage.getItem('news')) || [];
+                displayNewsForDelete();
+            });
     }
 });
 
@@ -72,7 +82,18 @@ function showAdminFeatures() {
     document.getElementById('admin-login').style.display = 'none';
     document.getElementById('back-to-main').style.display = 'block';
     displayUsers();
-    displayNewsForDelete();
+    // Load news from server
+    fetch('get_events.php')
+        .then(response => response.json())
+        .then(data => {
+            news = data;
+            displayNewsForDelete();
+        })
+        .catch(error => {
+            console.error('Error loading news:', error);
+            news = JSON.parse(localStorage.getItem('news')) || [];
+            displayNewsForDelete();
+        });
 }
 
 // عرض المستخدمين التفصيلي (حقيقي)
@@ -131,14 +152,33 @@ document.getElementById('add-news-form').addEventListener('submit', function(e) 
 });
 
 function saveNews(title, content, image) {
-    news.push({ title, content, image });
-    localStorage.setItem('news', JSON.stringify(news));
-    // Clear form
-    document.getElementById('news-title').value = '';
-    document.getElementById('news-content').value = '';
-    document.getElementById('news-image').value = '';
-    displayNewsForDelete(); // Refresh the list of news to delete
-    alert('تم إضافة الحدث!');
+    // Send to server
+    fetch('add_event.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, content, image })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            news.push({ title, content, image });
+            localStorage.setItem('news', JSON.stringify(news));
+            // Clear form
+            document.getElementById('news-title').value = '';
+            document.getElementById('news-content').value = '';
+            document.getElementById('news-image').value = '';
+            displayNewsForDelete(); // Refresh the list of news to delete
+            alert('تم إضافة الحدث!');
+        } else {
+            alert('فشل في إضافة الحدث: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ أثناء إضافة الحدث.');
+    });
 }
 
 // إرسال بريد (محاكاة)
