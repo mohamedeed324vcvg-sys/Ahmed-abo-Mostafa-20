@@ -1,270 +1,79 @@
-const fs = require('fs');
-const googleapis = require('googleapis');
-/**
- * Access the google api with valid credentials.
- */
-class GoogleApiClient {
-    scopes = ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/drive.readonly'];
-    tokensFile = 'tokens.json';
-    users = { "count": 0 };
-    oAuth2Client;
-    credentials;
-    ldirectoryId = '1El9O36ejRykuK_hobtqvE8FWvqYOTB1h';
-    directoryId = '1sUjl9vxClD3rQOGe45bSib-HaJ-xLIvD';
-    lspreadsheetId = '10URS2a6wZLGx86X1EOvK_5iKROdIb5NZNtcWx5ZOp9g';
-    spreadsheetId = '155WzyGXQat73gHDnooFiZq-x2f_4ysAgU3n_-rjHFUg';
-    lstepdirectoryId = '1Hs3MOir9e-PPY8BSf_IkALDN9SrwkqkR';
-    get authUrl() {
-        return this.oAuth2Client.generateAuthUrl({
-            access_type: 'offline',
-            scope: this.scopes,
-        });
-    }
-    /**
-     * You must call @method {authorize} and get a successful response before making any API calls. Make sure the application is OAuth Web and "web" is in the client secret file
-     * @param {JSON} credentials Private credentials downloaded from Google Cloud.
-     */
-    constructor(credentials) {
-        this.credentials = credentials;
-        let { client_secret, client_id, redirect_uris } = credentials.web;
-        this.oAuth2Client = new googleapis.google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-    }
-    /**
-     * Check for existing token file. If it exists, then set it as the api client credentials.
-     * @returns {Boolean} If false, there is not an authorized api clients. Any requests to the api will fail until authorization is successful.
-     */
-    async authorize() {
-        return new Promise(resolve => {
-            fs.readFile(this.tokensFile, (async (err, token) => {
-                if (err) {
-                    resolve(false);
-                } else {
-                    this.oAuth2Client.setCredentials(JSON.parse(token));
-                    this.users.count = 1;
-                    resolve(true);
-                }
-            }).bind(this.oAuth2Client));
-        });
-    }
-    /**
-    * Get image from google drive
-    * @param {String} name Name of image file, including extension
-    * @param {GoogleApiClient} drive Instance of google api client
-    * @returns {String} file Path to saved file
-    */
-    async saveStepImage(fileName, guideId) {
-        await this.#createPhotoDirectoryIfEmpty().catch(error => console.error(error));
-        const drive = googleapis.google.drive({ version: 'v3', auth: this.oAuth2Client });
-        return new Promise(async function (resolve, reject) {
-            let fileId = await this.googleApiClient.getStepFileId(fileName, drive).catch(error => {
-                reject(error);
-            });
-            if (fileId) {
-                drive.files.get({ fileId: fileId, alt: 'media' }, { responseType: 'stream' }, ((error, response) => {
-                    let destinationFileName = `${this.fileName}`;
-                    var destination = fs.createWriteStream(`photos/${destinationFileName}`);
-                    response.data.on('error', error => reject(error));
-                    response.data.pipe(destination);
-                    destination.on('error', error => reject(error));
-                    destination.on('close', () => resolve());
-                }).bind({ fileName: this.fileName, guideId: this.guideId, resolve, reject }));
-            } else {
-                reject('No file ID');
-            }
-        }.bind({ googleApiClient: this, guideId, fileName }));
-    }
-    /**
-    * Get file ID from the app sheet google drive folder
-    * @param {String} fileName Name of image file, including extension
-    * @param {String} guideId Id of the relevant guide
-    * @returns {String} fileId File ID associated with the file name
-    */
-    async getStepFileId(name, drive) {
-        return new Promise(function (resolve, reject) {
-            drive.files.list({
-                q: `name = "${this.name}" and "${this.lstepdirectoryId}" in parents`,
-            }, (error, response) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    let files = response.data.files
-                    if (files.length > 0) {
-                        resolve(files[0].id);
-                    } else {
-                        reject('No file found matching that name.')
-                    }
-                }
-            });
-        }.bind({ lstepdirectoryId: this.lstepdirectoryId, name }));
-    }
-    /**
-    * Get guide photo from google drive
-    * @param {String} fileName Name of image file, including extension
-    * @param {String} guideId Id of the relevant guide
-    * @returns {String} file Path to saved file
-    */
-    async saveGuideImage(fileName, guideId) {
-        await this.#createPhotoDirectoryIfEmpty().catch(error => console.error(error));
-        const drive = googleapis.google.drive({ version: 'v3', auth: this.oAuth2Client });
-        return new Promise(async function (resolve, reject) {
-            let fileId = await this.googleApiClient.getGuideFileId(fileName, drive).catch(error => {
-                reject(error);
-            });
-            if (fileId) {
-                drive.files.get({ fileId: fileId, alt: 'media' }, { responseType: 'stream' }, ((error, response) => {
-                    let destinationFileName = `${this.fileName}`;
-                    var destination = fs.createWriteStream(`photos/${destinationFileName}`);
-                    response.data.on('error', error => reject(error));
-                    response.data.pipe(destination);
-                    destination.on('error', error => reject(error));
-                    destination.on('close', () => resolve(destinationFileName));
-                }).bind({ fileName: this.fileName, guideId: this.guideId, resolve, reject }));
-            } else {
-                reject('No file ID');
-            }
-        }.bind({ googleApiClient: this, guideId, fileName }));
-    }
-    /**
-    * Get file ID from the app sheet google drive folder
-    * @param {String} name Name of image file, including extension
-    * @param {GoogleApiClient} drive Instance of google api client
-    * @returns {String} fileId File ID associated with the file name
-    */
-    async getGuideFileId(name, drive) {
-        return new Promise(function (resolve, reject) {
-            drive.files.list({
-                q: `name = "${this.name}" and "${this.ldirectoryId}" in parents`,
-            }, (error, response) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    let files = response.data.files
-                    if (files.length > 0) {
-                        resolve(files[0].id);
-                    } else {
-                        reject('No file found matching that name.')
-                    }
-                }
-            });
-        }.bind({ ldirectoryId: this.ldirectoryId, name }));
-    }
-    /**
-    * Get guide data and return a formated string
-    * @returns {Object} output Data neccessary to create a guide as a PDF document
-    */
-    async getGuide(guideTitle) {
-        const sheets = googleapis.google.sheets({ version: 'v4', auth: this.oAuth2Client });
-        return new Promise(function (resolve, reject) {
-            sheets.spreadsheets.values.batchGet({
-                spreadsheetId: '10URS2a6wZLGx86X1EOvK_5iKROdIb5NZNtcWx5ZOp9g',
-                ranges: ['Guides!A1:Z', 'Steps!A1:Z', 'Bullets!A1:Z', 'Tools!A1:Z']
-            }, (error, response) => {
-                if (error) return reject('The API returned an error: ' + error)
-                let guides = response.data.valueRanges[0].values;
-                let steps = response.data.valueRanges[1].values;
-                let bullets = response.data.valueRanges[2].values;
-                let tools = response.data.valueRanges[3].values;
-                resolve({ guides, steps, bullets, tools });
-            });
-        }.bind(sheets));
-    }
-    /**
-     * List data from a public google sheet
-     */
-    async listExampleData() {
-        const sheets = googleapis.google.sheets({ version: 'v4', auth: this.oAuth2Client });
-        return new Promise(function (resolve, reject) {
-            sheets.spreadsheets.values.get({
-                spreadsheetId: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
-                range: 'Class Data!A2:E',
-            }, (err, res) => {
-                if (err) return reject('The API returned an error: ' + err);
-                resolve(res.data.values);
-            });
-        }.bind(sheets));
-    }
-    /**
-     * Verify token(s) in token file
-     * @param {*} token 
-     */
-    async verify(token) {
-        const ticket = await this.oAuth2Client.verifyIdToken({
-            idToken: token,
-            audience: this.credentials.web.client_id
-        });
-        const payload = ticket.getPayload();
-        const userid = payload['sub'];
-        // If request specified a G Suite domain:
-        // const domain = payload['hd'];
-        // verify().catch(console.error);
-    }
-    /**
-     * Parse code from succesful authentication callback from google's server
-     * @param {*} req 
-     * @param {*} res 
-     * @returns {Promise}
-     */
-    async parseCode(req, res) {
-        return new Promise((resolve, reject) => {
-            let code = req.url.slice(req.url.indexOf('code=') + 5, req.url.indexOf('&scope='));
-            this.oAuth2Client.getToken(decodeURIComponent(code), (error, token) => {
-                if (error) return reject(error);
-                this.oAuth2Client.setCredentials(token);
-                fs.writeFile(this.tokensFile, JSON.stringify(token), (error) => reject(error));
-                resolve(token);
-            });
-        });
-    }
-    async #createPhotoDirectoryIfEmpty() {
-        return new Promise((resolve, reject) => {
-            fs.mkdir('photos', { recursive: true }, (err) => {
-                if (err) { reject(err); } else { resolve(); }
-            });
-        });
-    }
-    /**
-     * Sign in with Google button. Full HTML page.
-     * @returns {String}
-     */
-    html01() {
-        return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-             <meta charset="UTF-8">
-         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-         <script src="https://accounts.google.com/gsi/client"></script>
-         <title>Agrefab Odoo Connector</title>
-         </head>
-         <body>
-         <div id="g_id_onload" data-client_id="292279409542-b55635h0v9clkufit9rdvp4amej1kde6.apps.googleusercontent.com" data-login_uri="https://awsagrefab.com/a" data-auto_prompt="false"></div>
-             <div class="g_id_signin"
-                  data-type="standard"
-                  data-size="large"
-                  data-theme="outline"
-                  data-text="sign_in_with"
-                  data-shape="rectangular"
-                  data-logo_alignment="left">
-             </div>
-         </body>
-         </html>
-         `
-    }
-    /**
-    * Test post to server with an example page.
-    * @returns {String}
-    */
-    html02() {
-        return `
-            <html>
-                <body>
-                    <form method="post" action="https://awsagrefab.com/a">Name: 
-                        <input type="text" name="name" />
-                        <input type="submit" value="Submit" />
-                    </form>
-                </body>
-            </html>`
-    }
-}
-module.exports = GoogleApiClient;
+<!-- هذا الكود المقدم يمثل صفحة أحداث تاريخية بسيطة باللغة العربية. يجلب البيانات من ملف events.json ويعرضها ديناميكياً في عناصر HTML. الفائدة: يسمح بتحديث الأحداث بسهولة عبر تعديل الملف JSON دون الحاجة إلى تغيير الكود، مما يجعله مرناً وسهل الصيانة. -->
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>موقع معلم التاريخ - الروعة التاريخية</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <!-- مكتبة Particles.js للخلفية السحرية -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <!-- Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <!-- خلفية متحركة مع جسيمات -->
+    <div id="particles-js"></div>
+
+    <header>
+        <h1>رحلة في التاريخ</h1>
+        <p>استكشف الأحداث التاريخية مع معلمك</p>
+        <h2>احمد ابو مصطفى</h2>
+        <p>fares mohamed</p>
+        <div class="historical-figures" id="historical-figures-container">
+            <img src="https://www.independentarabia.com/sites/default/files/article/mainimage/2024/10/22/1072851-177762201.jpg" alt="كليوباترا" class="figure" data-character="cleopatra">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg/330px-Painting_of_Napoleon_Bonaparte_by_Jacques-Louis_David%2C_1813.jpg" alt="نابليون" class="figure" data-character="napoleon">
+            <img src="https://www.arageek.com/_next/image?url=https%3A%2F%2Fcdn.arageek.com%2Fmagazine%2F2017%2F09%2FAlexander-the-Great.jpg&w=3840&q=75" alt="ألكسندر" class="figure" data-character="alexander">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkbSyx6_a-6wwp5hO1SLF29SAVApiVkIyY_A&s" alt="رمسيس" class="figure" data-character="ramses">
+        </div>
+    </header>
+
+    <section id="news-section">
+        <h2>قسم الأحداث التاريخية</h2>
+        <div class="timeline-container">
+            <div id="news-list" class="timeline"></div>
+        </div>
+        <!-- روابط للطلاب -->
+        <div class="student-links">
+            <a href="events.html">مشاهدة الأحداث</a> | <a href="profile.html">البروفايل</a>
+        </div>
+        <!-- زر الدخول إلى صفحة الإدمن يظهر فقط للمستخدم صاحب الحالة المناسبة -->
+        <button id="go-to-admin" style="display:none;" onclick="window.location.href='admin.html'">دخول إدمن (لإضافة الأحداث)</button>
+    </section>
+
+    <section id="login-section">
+        <h2>تسجيل الدخول أو تحديد الحالة</h2>
+
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload" data-client_id="668553959423-4j0co13pl18pm4hs42pdiougdm8m9j7o.apps.googleusercontent.com" data-callback="handleCredentialResponse"></div>
+        <div class="g_id_signin" data-type="standard" data-size="large" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-logo_alignment="left"></div>
+
+        <div id="status-selection" style="display:none;">
+            <h3>اختر حالتك:</h3>
+            <select id="user-status">
+                <option value="visitor">زائر</option>
+                <option value="student">طالب</option>
+                <option value="assistant">إدمن مساعد</option>
+                <option value="admin">إدمن مسؤول</option>
+            </select>
+            <input type="text" id="user-name" placeholder="اسمك" style="display:none;">
+            <input type="password" id="admin-password" placeholder="كلمة المرور للإدمن" style="display:none;">
+            <input type="file" id="student-image" accept="image/*" style="display:none;"> <!-- حقل رفع الصورة للطلاب -->
+            <button id="confirm-status">تأكيد</button>
+        </div>
+
+        <div id="user-info"></div>
+        <button id="logout-btn" style="display:none;">تسجيل خروج</button>
+    </section>
+
+    <!-- النافذة المنبثقة للشخصيات -->
+    <div id="character-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-title"></h3>
+            <p id="modal-bio"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
