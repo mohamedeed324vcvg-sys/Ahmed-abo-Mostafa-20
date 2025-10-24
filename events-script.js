@@ -1,57 +1,28 @@
-// تحميل البيانات من الخادم
-let news = [];
+<?php
+require 'vendor/autoload.php';
 
-// تهيئة Particles.js
-particlesJS('particles-js', {
-    particles: {
-        number: { value: 30 },
-        color: { value: '#FFD700' },
-        shape: { type: 'circle' },
-        opacity: { value: 0.5 },
-        size: { value: 2 },
-        move: { speed: 1, direction: 'none', random: true }
-    },
-    interactivity: {
-        events: { onhover: { enable: true, mode: 'repulse' } }
-    }
-});
+session_start();
 
-// عرض الأحداث مع الصور
-function displayNews() {
-    const newsList = document.getElementById('news-list');
-    newsList.innerHTML = '';
-    news.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'news-item';
-        div.innerHTML = `<h3>${item.title}</h3><p>${item.content}</p>`;
-        if (item.image) {
-            div.innerHTML += `<img src="${item.image}" width="150" height="100" alt="صورة الحدث">`;
-        }
-        newsList.appendChild(div);
-    });
+// إعداد بيانات الاعتماد
+$client = new Google_Client();
+$client->setClientId('668553959423-4j0co13pl18pm4hs42pdiougdm8m9j7o.apps.googleusercontent.com'); // استبدل بـ Client ID الخاص بك
+$client->setClientSecret('668553959423-4j0co13pl18pm4hs42pdiougdm8m9j7o.apps.googleusercontent.com'); // استبدل بـ Client Secret الخاص بك
+$client->setRedirectUri('https://mohamedeed324vcvg-sys.github.io/Ahmed-abo-Mostafa-20/'); // URI إعادة التوجيه
+
+// الحصول على رمز التفويض
+if (isset($_GET['code'])) {
+    $token = $client->fetchAccessTokenWithAuthCode($_GET['code']);
+    $client->setAccessToken($token['access_token']);
+
+    // الحصول على معلومات المستخدم
+    $oauth2 = new Google_Service_Oauth2($client);
+    $userInfo = $oauth2->userinfo->get();
+
+    // عرض معلومات المستخدم
+    echo 'اسم المستخدم: ' . $userInfo->name . '<br>';
+    echo 'البريد الإلكتروني: ' . $userInfo->email . '<br>';
+    echo 'صورة الملف الشخصي: <img src="' . $userInfo->picture . '"><br>';
+} else {
+    echo 'فشل تسجيل الدخول';
 }
-
-// تحميل الأحداث من الخادم
-function loadNews() {
-    fetch('get_events.php')
-        .then(response => response.json())
-        .then(data => {
-            news = data;
-            displayNews();
-        })
-        .catch(error => {
-            console.error('Error loading news:', error);
-            // Fallback to localStorage if server fails
-            news = JSON.parse(localStorage.getItem('news')) || [];
-            displayNews();
-        });
-}
-
-window.onload = loadNews;
-
-// إضافة listener لتحديث الأحداث عند تغيير localStorage من صفحات أخرى
-window.addEventListener('storage', function(e) {
-    if (e.key === 'news') {
-        loadNews(); // Reload from server
-    }
-});
+?>
